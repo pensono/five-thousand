@@ -62,7 +62,7 @@ const STRATEGIES = {
         return numberToRoll > 3;
     },
     'NAK ATTK': ({numberToRoll, score}) => {
-        return !((numberToRoll <= 2) || (score >= 500));
+        return !((numberToRoll <= 2) || (score >= 700));
     },
     // 'Ethan strat': ({numberToRoll, score}) => {
     //     const stopValues = {
@@ -70,16 +70,43 @@ const STRATEGIES = {
     //         2: 500,
     //         3: 700,
     //         4: 1000,
-    //         5: 1500,
+    //         5: 2000,
     //     }
     //     return score < stopValues[numberToRoll];
     // },
-    ...Object.fromEntries(range(0, 1000, 50).map(i => 
-        [`${i} floor`, ({numberToRoll, score}) => {
-            return score <= i && numberToRoll >= 2;
-        }]
-    ))
+    // ...Object.fromEntries(range(0, 1000, 50).map(i => 
+    //     [`${i} floor`, ({numberToRoll, score}) => {
+    //         return score <= i && numberToRoll > 2;
+    //     }]
+    // )),
+    ...Object.fromEntries(range(0, 200, 50).flatMap(i1 => 
+        range(0, 200, 50).flatMap(i2 => 
+            range(100, 800, 50).flatMap(i3 => 
+                range(800, 2500, 200).flatMap(i4 => 
+                    range(5000, 5000, 200).map(i5 => 
+                        [`${i1} - ${i2} - ${i3} - ${i4} - ${i5}`, ({numberToRoll, score}) => {
+                            const stopValues = {
+                                1: i1,
+                                2: i2,
+                                3: i3,
+                                4: i4,
+                                5: i5,
+                            }
+                            return score < stopValues[numberToRoll];
+                        }]
+                    )
+                )
+            )
+        )
+    )),
 }
+
+// Best strategies
+// │ 155     │ '0 - 0 - 750 - 400 - 1600'     │ 280.37  │ 50000       │
+// │ 9       │ '0 - 0 - 700 - 1000 - 5000'  │ 278.572  │ 100000      │
+// │ 10      │ '0 - 0 - 700 - 1200 - 5000'  │ 278.138  │ 100000      │
+// │ 11      │ '0 - 0 - 700 - 1400 - 5000'  │ 276.222  │ 100000      │
+// │ 12      │ '0 - 0 - 700 - 1600 - 5000'  │ 277.293  │ 100000      │
 
 const stats = []
 let simulations = 100_000;
@@ -90,11 +117,12 @@ for (const [name, fn] of Object.entries(STRATEGIES)) {
         total += s
     }
 
-    stats.push({
+    const stat = {
         strategy: name,
         average: total / simulations,
         simulations,
-    })
+    }
+    stats.push(stat);
 }
 
 console.table(stats)
